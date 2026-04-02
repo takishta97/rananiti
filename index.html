@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Rananiti — रणनीति</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#F5F0E8;--parchment:#EDE8DC;--warm:#FAF8F4;
+  --rust:#C4522A;--rust-l:#D4714A;--rust-d:#9B3E1E;
+  --ochre:#C8892A;--ink:#2C2418;--ink-m:#5C5040;
+  --ink-d:#9C8E7C;--ink-f:#C8BFB0;--border:#D8CFC0;
+  --green:#3D7A3D;--blue:#2A5C8C;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;-webkit-font-smoothing:antialiased;}
+.screen{display:none;min-height:100vh;}
+.screen.active{display:block;}
+#entry.active,#loading.active,#home.active{display:flex;}
+
+/* ── HOME — saved diagnoses ── */
+#home{background:var(--warm);flex-direction:column;align-items:center;padding:48px 20px 100px;}
+.home-logo{text-align:center;margin-bottom:36px;cursor:pointer;}
+.home-logo-name{font-family:'Playfair Display',serif;font-size:44px;font-weight:900;color:var(--rust);letter-spacing:-2px;line-height:1;}
+.home-logo-deva{font-size:13px;color:var(--ink-d);margin-top:6px;letter-spacing:5px;font-weight:300;}
+.home-section{width:100%;max-width:480px;margin-bottom:28px;}
+.home-sec-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--rust);margin-bottom:12px;}
+.saved-card{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all 0.2s;}
+.saved-card:hover{border-color:var(--rust-l);background:#FDF9F5;}
+.saved-co{font-size:14px;font-weight:700;color:var(--ink);}
+.saved-meta{font-size:11px;color:var(--ink-d);margin-top:2px;}
+.saved-actions{display:flex;gap:8px;align-items:center;}
+.saved-open{background:var(--rust);color:white;border:none;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.saved-del{background:transparent;color:var(--ink-d);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;}
+.new-btn{width:100%;max-width:480px;background:var(--rust);color:white;border:none;border-radius:12px;padding:15px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.2s;}
+.new-btn:hover{background:var(--rust-d);}
+.empty-state{background:var(--cream);border:1px dashed var(--border);border-radius:12px;padding:28px;text-align:center;width:100%;max-width:480px;margin-bottom:20px;}
+.empty-ico{font-size:32px;margin-bottom:10px;}
+.empty-txt{font-size:13px;color:var(--ink-d);line-height:1.6;}
+
+/* ── ENTRY ── */
+#entry{background:var(--warm);flex-direction:column;align-items:center;padding:48px 20px 100px;}
+.logo{text-align:center;margin-bottom:48px;cursor:pointer;}
+.logo-name{font-family:'Playfair Display',serif;font-size:52px;font-weight:900;color:var(--rust);letter-spacing:-2px;line-height:1;}
+.logo-deva{font-size:13px;color:var(--ink-d);margin-top:8px;letter-spacing:5px;font-weight:300;}
+.logo-tag{font-size:11px;color:var(--ink-m);margin-top:12px;letter-spacing:2px;text-transform:uppercase;}
+.card{background:var(--cream);border:1.5px solid var(--border);border-radius:18px;padding:22px;width:100%;max-width:480px;margin-bottom:12px;}
+.slabel{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--rust);margin-bottom:14px;}
+.einput{width:100%;background:var(--warm);border:1.5px solid var(--border);border-radius:10px;padding:13px 16px;font-size:15px;font-family:'DM Sans',sans-serif;color:var(--ink);outline:none;transition:border-color 0.2s;}
+.einput:focus{border-color:var(--rust);}
+.ihint{font-size:12px;color:var(--ink-d);margin-top:8px;line-height:1.5;}
+.pills{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+.pill{background:var(--warm);border:1px solid var(--border);border-radius:20px;padding:5px 13px;font-size:11px;font-weight:500;color:var(--ink-m);cursor:pointer;transition:all 0.15s;}
+.pill:hover{border-color:var(--rust);color:var(--rust);}
+.why-btn{background:var(--warm);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;text-align:left;width:100%;transition:all 0.2s;}
+.why-btn:hover{border-color:var(--rust-l);}
+.why-btn.sel{border-color:var(--rust);background:#FDF0E8;}
+.wi{font-size:17px;flex-shrink:0;margin-top:1px;}
+.wt{font-size:13px;font-weight:600;color:var(--ink);line-height:1.3;}
+.ws{font-size:11px;color:var(--ink-d);margin-top:2px;line-height:1.4;}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.mcard{background:var(--warm);border:1.5px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;text-align:left;transition:all 0.2s;}
+.mcard:hover{border-color:var(--rust-l);}
+.mcard.sel{border-color:var(--rust);background:#FDF0E8;}
+.mi{font-size:22px;margin-bottom:8px;}
+.mt{font-size:13px;font-weight:700;color:var(--ink);}
+.mtime{font-size:10px;color:var(--rust);font-weight:700;margin-top:2px;letter-spacing:0.5px;}
+.mdesc{font-size:11px;color:var(--ink-m);margin-top:6px;line-height:1.4;}
+.btn{width:100%;background:var(--rust);color:white;border:none;border-radius:10px;padding:14px 24px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:14px;transition:background 0.2s;}
+.btn:hover{background:var(--rust-d);}
+.btn:disabled{background:var(--ink-f);cursor:not-allowed;}
+.btn-sm{background:transparent;color:var(--ink-d);border:1.5px solid var(--border);border-radius:8px;padding:8px 14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;display:inline-block;margin-bottom:16px;}
+.btn-sm:hover{border-color:var(--rust-l);color:var(--rust);}
+
+/* ── OVERVIEW ── */
+#overview{background:var(--warm);padding:32px 20px 100px;}
+.ov-inner{max-width:480px;margin:0 auto;}
+.eyebrow{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--rust);font-weight:700;margin-bottom:8px;}
+.ov-title{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--ink);line-height:1.15;margin-bottom:8px;}
+.ov-sub{font-size:13px;color:var(--ink-m);line-height:1.6;margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+.ll{display:flex;flex-direction:column;gap:6px;margin-bottom:18px;}
+.ll-row{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:11px;}
+.ll-n{width:24px;height:24px;background:var(--rust);color:white;border-radius:50%;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ll-b{flex:1;}
+.ll-name{font-size:12px;font-weight:600;color:var(--ink);}
+.ll-d{font-size:11px;color:var(--ink-d);margin-top:1px;}
+.ll-t{font-size:10px;color:var(--ink-f);flex-shrink:0;}
+.int-strip{background:var(--parchment);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:18px;}
+.int-t{font-size:10px;font-weight:700;color:var(--rust);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;}
+.badges{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--ink-m);}
+
+/* ── PROGRESS ── */
+.prog{position:sticky;top:0;z-index:100;background:var(--warm);border-bottom:1px solid var(--border);}
+.prog-top{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 6px;}
+.prog-logo{font-family:'Playfair Display',serif;font-size:14px;font-weight:900;color:var(--rust);cursor:pointer;}
+.prog-layer{font-size:11px;color:var(--ink-m);font-weight:600;flex:1;text-align:center;}
+.prog-n{font-size:11px;color:var(--ink-d);}
+.prog-track{height:2px;background:var(--border);}
+.prog-fill{height:100%;background:var(--rust);transition:width 0.5s ease;}
+.layer-tabs{display:flex;gap:4px;padding:6px 12px 8px;overflow-x:auto;scrollbar-width:none;}
+.layer-tabs::-webkit-scrollbar{display:none;}
+.ltab{background:transparent;border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:10px;font-weight:600;color:var(--ink-d);cursor:pointer;white-space:nowrap;transition:all 0.2s;font-family:'DM Sans',sans-serif;}
+.ltab:hover{border-color:var(--rust-l);color:var(--rust-l);}
+.ltab.active{background:var(--rust);border-color:var(--rust);color:white;}
+.ltab.done{background:var(--parchment);border-color:var(--border);color:var(--ink-m);}
+.ltab.loading-tab{opacity:0.5;}
+
+/* ── JOURNEY ── */
+#journey{background:var(--warm);}
+.j-inner{max-width:600px;margin:0 auto;padding:24px 18px 100px;}
+.lh{margin-bottom:24px;padding-bottom:18px;border-bottom:1px solid var(--border);}
+.lh-eye{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--rust);font-weight:700;margin-bottom:6px;}
+.lh-title{font-family:'Playfair Display',serif;font-size:24px;font-weight:900;color:var(--ink);line-height:1.15;margin-bottom:8px;}
+.lh-intro{font-size:13px;color:var(--ink-d);line-height:1.6;}
+
+/* ── BADGES ── */
+.badge{display:inline-block;font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:3px;padding:1px 5px;margin-left:3px;vertical-align:middle;font-family:monospace;}
+.bc{color:var(--green);border:1px solid var(--green);}
+.bd{color:var(--blue);border:1px solid var(--blue);}
+.be{color:var(--ochre);border:1px solid var(--ochre);}
+.bu{color:var(--rust);border:1px solid var(--rust);}
+
+/* ── CONTENT COMPONENTS ── */
+.sl{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--ink-d);margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
+.sl::after{content:'';flex:1;height:1px;background:var(--border);}
+.insight{background:var(--rust);border-radius:12px;padding:18px 20px;margin:0 0 20px;}
+.insight-lbl{font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;}
+.insight-txt{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:white;line-height:1.5;}
+.num-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin:0 0 16px;}
+.num-box{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:14px 12px;}
+.num-box.accent{border-color:var(--rust);background:#FDF0E8;}
+.num-box.dim{background:var(--parchment);}
+.num-big{font-family:'Playfair Display',serif;font-size:26px;font-weight:900;color:var(--ink);line-height:1;margin-bottom:4px;}
+.num-box.accent .num-big{color:var(--rust);}
+.num-lbl{font-size:10px;font-weight:700;color:var(--ink-d);letter-spacing:1px;text-transform:uppercase;line-height:1.3;}
+.num-sub{font-size:11px;color:var(--ink-d);margin-top:4px;}
+.bars{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0 0 16px;}
+.bars-title{font-size:10px;font-weight:700;color:var(--ink-d);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:14px;}
+.bar-row{margin-bottom:11px;}
+.bar-row:last-child{margin-bottom:0;}
+.bar-meta{display:flex;justify-content:space-between;margin-bottom:4px;}
+.bar-lbl{font-size:12px;color:var(--ink);}
+.bar-val{font-size:12px;color:var(--rust);font-weight:700;}
+.bar-track{background:var(--border);border-radius:4px;height:7px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:4px;background:var(--rust);width:0;transition:width 1.4s cubic-bezier(0.4,0,0.2,1);}
+.bar-fill.gold{background:var(--ochre);}
+.bar-fill.dark{background:var(--ink-d);}
+.funnel{margin:0 0 16px;}
+.fn-step{display:flex;align-items:center;gap:10px;margin-bottom:2px;}
+.fn-bar-wrap{flex:1;}
+.fn-bar{border-radius:6px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;}
+.fn-lbl{font-size:12px;font-weight:600;color:var(--ink);}
+.fn-num{font-family:'Playfair Display',serif;font-size:14px;font-weight:900;color:var(--ink);}
+.fn-drop{font-size:10px;color:var(--rust);font-weight:700;text-align:center;padding:2px 0 4px;letter-spacing:0.5px;}
+.hl{background:var(--parchment);border-left:3px solid var(--rust);padding:11px 14px;border-radius:0 8px 8px 0;margin:0 0 16px;font-size:12px;line-height:1.6;color:var(--ink-m);}
+.hl strong{color:var(--rust);}
+.india{background:linear-gradient(135deg,#FDF5E8,#F5EDD8);border:1px solid var(--ochre);border-radius:12px;padding:16px 18px;margin:16px 0 0;}
+.india-lbl{font-size:10px;font-weight:700;color:var(--ochre);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+.t{width:100%;border-collapse:collapse;margin:0 0 16px;border-radius:10px;overflow:hidden;font-size:12px;}
+.t th{background:var(--rust);color:white;font-size:10px;font-weight:700;padding:8px 11px;text-align:left;letter-spacing:0.5px;text-transform:uppercase;}
+.t td{padding:8px 11px;border-bottom:1px solid var(--border);color:var(--ink-m);vertical-align:top;}
+.t tr:last-child td{border-bottom:none;}
+.t tr:nth-child(even) td{background:var(--cream);}
+.t td strong{color:var(--ink);}
+.t .win{color:var(--green);font-weight:600;}
+.t .lose{color:var(--rust);font-weight:600;}
+.arch{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0 0 10px;}
+.arch-head{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.arch-ico{width:36px;height:36px;border-radius:50%;background:var(--rust);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.arch-name{font-size:14px;font-weight:700;color:var(--ink);line-height:1.2;}
+.arch-tag{font-size:10px;color:var(--rust);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+.arch-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.ag{background:var(--warm);border-radius:6px;padding:8px 10px;}
+.ag-l{font-size:9px;color:var(--ink-d);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:3px;}
+.ag-v{font-size:11px;color:var(--ink-m);line-height:1.4;}
+.gap{background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:16px;margin:0 0 10px;}
+.gap-hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;}
+.gap-num{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--rust);opacity:0.25;line-height:1;flex-shrink:0;min-width:32px;}
+.gap-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.gap-desc{font-size:12px;color:var(--ink-m);line-height:1.6;margin-bottom:6px;}
+.gap-moment{font-size:11px;color:var(--rust);font-style:italic;line-height:1.5;}
+.opp{background:var(--cream);border:1px solid var(--border);border-left:3px solid var(--rust);border-radius:12px;padding:16px;margin:0 0 10px;}
+.opp-title{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.opp-num{font-family:'Playfair Display',serif;font-size:34px;font-weight:900;color:var(--rust);line-height:1;margin:6px 0;}
+.opp-formula{font-size:10px;color:var(--ink-d);font-family:monospace;background:var(--parchment);padding:7px 10px;border-radius:5px;margin:8px 0;line-height:1.6;}
+.opp-meta{font-size:11px;color:var(--ink-m);}
+.qcard{background:var(--cream);border:1px solid var(--border);border-radius:10px;padding:14px;margin:0 0 8px;display:flex;gap:10px;}
+.qn{width:24px;height:24px;background:var(--parchment);border:1px solid var(--border);border-radius:50%;font-size:11px;font-weight:800;color:var(--rust);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.qtext{font-size:13px;font-weight:600;color:var(--ink);line-height:1.5;margin-bottom:3px;}
+.qwhy{font-size:11px;color:var(--ink-d);line-height:1.4;}
+
+/* ── LOADING LAYER (inline, not full screen) ── */
+.layer-loading{text-align:center;padding:60px 20px;}
+.ll-spinner{display:inline-flex;gap:6px;margin-bottom:16px;}
+.ll-spinner span{width:8px;height:8px;background:var(--rust);border-radius:50%;animation:pulse 1.2s ease-in-out infinite;}
+.ll-spinner span:nth-child(2){animation-delay:0.2s;}
+.ll-spinner span:nth-child(3){animation-delay:0.4s;}
+.ll-title{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px;}
+.ll-sub{font-size:12px;color:var(--ink-d);line-height:1.6;max-width:280px;margin:0 auto;}
+
+/* ── ERROR STATE ── */
+.layer-error{background:var(--parchment);border:1px solid var(--border);border-radius:12px;padding:20px;margin:20px 0;text-align:center;}
+.le-ico{font-size:28px;margin-bottom:10px;}
+.le-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.le-sub{font-size:12px;color:var(--ink-m);line-height:1.6;margin-bottom:14px;}
+.le-retry{background:var(--rust);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:12px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;}
+
+/* ── CHECKPOINT ── */
+.cp{margin-top:24px;padding:12px 14px;background:var(--cream);border:1px solid var(--border);border-radius:10px;}
+.cp-lbl{font-size:10px;font-weight:700;color:var(--ink-d);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.cp-btns{display:flex;gap:6px;flex-wrap:wrap;}
+.cp-btn{background:var(--warm);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:11px;font-weight:500;color:var(--ink-m);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.cp-btn:hover{border-color:var(--rust-l);color:var(--rust);}
+.cp-btn.ch{background:#FDF0E8;border-color:var(--rust);color:var(--rust);font-weight:700;}
+
+/* ── NAV ── */
+.nav{display:flex;gap:8px;margin-top:12px;}
+.next-btn{flex:1;background:var(--rust);color:white;border:none;border-radius:10px;padding:14px;font-size:14px;font-weight:700;font-family:'DM Sans',sans-serif;cursor:pointer;transition:background 0.2s;display:none;}
+.next-btn:hover{background:var(--rust-d);}
+.next-btn.vis{display:block;}
+.back-btn{background:transparent;color:var(--ink-d);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:all 0.2s;}
+.back-btn:hover{border-color:var(--rust-l);color:var(--rust);}
+
+/* ── FULL SCREEN LOADING ── */
+#loading{background:var(--warm);align-items:center;justify-content:center;flex-direction:column;gap:14px;}
+.ld-logo{font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:var(--rust);}
+.ld-txt{font-size:12px;color:var(--ink-m);}
+.ld-dots span{display:inline-block;width:6px;height:6px;background:var(--rust);border-radius:50%;margin:0 3px;animation:pulse 1.2s ease-in-out infinite;}
+.ld-dots span:nth-child(2){animation-delay:0.2s;}
+.ld-dots span:nth-child(3){animation-delay:0.4s;}
+@keyframes pulse{0%,80%,100%{opacity:0.3;transform:scale(0.8)}40%{opacity:1;transform:scale(1)}}
+.gc p{margin-bottom:10px;font-size:13px;color:var(--ink-m);line-height:1.65;}
+.gc strong{color:var(--ink);font-weight:600;}
+</style>
+</head>
+<body>
+
+<!-- HOME — saved diagnoses -->
+<div id="home" class="screen active">
+  <div class="home-logo" onclick="goHome()">
+    <div class="home-logo-name">Rananiti</div>
+    <div class="home-logo-deva">रणनीति</div>
+  </div>
+  <div class="home-section">
+    <div class="home-sec-label">Recent diagnoses</div>
+    <div id="saved-list"></div>
+  </div>
+  <button class="new-btn" onclick="show('entry')">+ New Diagnosis</button>
+</div>
+
+<!-- ENTRY -->
+<div id="entry" class="screen">
+  <div class="logo" onclick="goHome()">
+    <div class="logo-name">Rananiti</div>
+    <div class="logo-deva">रणनीति</div>
+    <div class="logo-tag">A PM's homework. Before everything else.</div>
+  </div>
+  <div class="card" id="c1">
+    <div class="slabel">Step 1 — What are you diagnosing?</div>
+    <input class="einput" id="co-input" type="text" placeholder="e.g. Airbnb, Zepto, CRED, Meesho…"/>
+    <div class="ihint">Any company or product. Rananiti builds a full strategic diagnosis — business model, market, users, gaps, and where the money is.</div>
+    <div class="pills">
+      <span class="pill" onclick="fill('Airbnb')">Airbnb</span>
+      <span class="pill" onclick="fill('Zepto')">Zepto</span>
+      <span class="pill" onclick="fill('CRED')">CRED</span>
+      <span class="pill" onclick="fill('Swiggy')">Swiggy</span>
+      <span class="pill" onclick="fill('Nykaa')">Nykaa</span>
+      <span class="pill" onclick="fill('Meesho')">Meesho</span>
+      <span class="pill" onclick="fill('Netflix')">Netflix</span>
+    </div>
+    <button class="btn" id="b1" disabled>Continue →</button>
+  </div>
+  <div class="card" id="c2" style="display:none">
+    <div class="slabel">Step 2 — Why are you here?</div>
+    <button class="why-btn" data-w="interview"><span class="wi">⚡</span><div><div class="wt">Interview coming up</div><div class="ws">Walk in knowing this business better than they expect</div></div></button>
+    <button class="why-btn" data-w="outreach"><span class="wi">🎯</span><div><div class="wt">Building a case to approach this company</div><div class="ws">First message should show I've done the work</div></div></button>
+    <button class="why-btn" data-w="joining"><span class="wi">🚀</span><div><div class="wt">Just joined or about to join</div><div class="ws">Understand everything before I'm handed a task</div></div></button>
+    <button class="why-btn" data-w="internal"><span class="wi">🔭</span><div><div class="wt">I work here — want to think bigger</div><div class="ws">See my company the way investors and competitors see it</div></div></button>
+    <button class="why-btn" data-w="building"><span class="wi">🏗️</span><div><div class="wt">Building something in this space</div><div class="ws">Understand the market before committing to decisions</div></div></button>
+    <button class="why-btn" data-w="curious"><span class="wi">🧠</span><div><div class="wt">Just exploring</div><div class="ws">Genuine curiosity. No agenda.</div></div></button>
+    <button class="btn" id="b2" disabled>Continue →</button>
+  </div>
+  <div class="card" id="c3" style="display:none">
+    <div class="slabel">Step 3 — How deep?</div>
+    <div class="mode-grid">
+      <button class="mcard" data-m="quick"><div class="mi">⚡</div><div class="mt">Quick Scan</div><div class="mtime">~15 min · 5 layers</div><div class="mdesc">Business, market, users, numbers, opportunities.</div></button>
+      <button class="mcard" data-m="deep"><div class="mi">🔬</div><div class="mt">Deep Dive</div><div class="mtime">~45 min · 8 layers</div><div class="mdesc">All 8 layers. Full psychology, gaps, your move.</div></button>
+    </div>
+    <button class="btn" id="b3" disabled>Start Rananiti →</button>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div id="overview" class="screen">
+  <div class="ov-inner">
+    <button class="btn-sm" onclick="back('overview')">← Back</button>
+    <div class="eyebrow">Rananiti — <span id="ov-co"></span></div>
+    <h1 class="ov-title">What you're about to learn</h1>
+    <p class="ov-sub">Each layer builds on the last. Generated live as you read.</p>
+    <div class="ll" id="ll"></div>
+    <div class="int-strip">
+      <div class="int-t">Data Integrity</div>
+      <div class="badges">
+        <span><span class="badge bc">Confirmed</span> Public sources</span>
+        <span><span class="badge bd">Derived</span> Calculated</span>
+        <span><span class="badge be">Estimated</span> Approximated</span>
+        <span><span class="badge bu">Unavailable</span> Not public</span>
+      </div>
+    </div>
+    <button class="btn" id="b-begin">Begin →</button>
+  </div>
+</div>
+
+<!-- JOURNEY -->
+<div id="journey" class="screen">
+  <div class="prog">
+    <div class="prog-top">
+      <span class="prog-logo" onclick="goHome()">Rananiti</span>
+      <span class="prog-layer" id="prog-layer"></span>
+      <span class="prog-n" id="prog-n">1/8</span>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:12.5%"></div></div>
+    <div class="layer-tabs" id="layer-tabs"></div>
+  </div>
+  <div class="j-inner">
+    <div id="layer-content"></div>
+    <div class="cp" id="cp" style="display:none">
+      <div class="cp-lbl">How did this hit you?</div>
+      <div class="cp-btns">
+        <button class="cp-btn" data-c="knew">Already knew this</button>
+        <button class="cp-btn" data-c="surprised">Didn't know this</button>
+        <button class="cp-btn" data-c="thinking">Got me thinking</button>
+        <button class="cp-btn" data-c="more">Want to go deeper</button>
+      </div>
+    </div>
+    <div class="nav">
+      <button class="back-btn" id="back-layer">← Back</button>
+      <button class="next-btn" id="next-btn">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- FULL SCREEN LOADING (first layer only) -->
+<div id="loading" class="screen">
+  <div class="ld-logo">Rananiti</div>
+  <div class="ld-txt" id="ld-txt">Researching…</div>
+  <div class="ld-dots"><span></span><span></span><span></span></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+const S = { co:'', why:null, mode:null, layer:0 };
+
+const ALL = [
+  {id:'business',   label:'The Business',      icon:'💰', desc:'Model, revenue, how money flows',            quick:true},
+  {id:'market',     label:'The Market',         icon:'🌍', desc:'Size, competition, real threats',            quick:true},
+  {id:'product',    label:'The Product',        icon:'📱', desc:'What\'s built, what worked, what failed',   quick:false},
+  {id:'numbers',    label:'The Numbers',        icon:'📊', desc:'Full funnel — world to paying user',         quick:true},
+  {id:'human',      label:'The Human',          icon:'🧬', desc:'Who uses this, why, what they feel',         quick:true},
+  {id:'gaps',       label:'The Gaps',           icon:'🔍', desc:'Where value leaks',                          quick:false},
+  {id:'opportunities',label:'The Opportunities',icon:'⚡', desc:'Sized, sequenced, with maths shown',         quick:true},
+  {id:'move',       label:'Your Move',          icon:'♟️', desc:'What you do with all of this',               quick:false}
+];
+
+const TITLES = [
+  'How does {co} make money?',
+  'What world does {co} operate in?',
+  'What has {co} built — and what did they learn?',
+  'Who is in the funnel — and who falls out?',
+  'Who is on the other side of the screen?',
+  'Where is {co} leaving value on the table?',
+  'What are the real opportunities — sized and sequenced?',
+  'Your move. What do you do with all of this?'
+];
+
+const INTROS = [
+  'Before touching anything — understand the engine. Where does money come in? Where does it stop?',
+  'Map the forces. Who are the real competitors? What is shifting?',
+  'Products reveal strategy. Every decision — right or wrong — tells you how the company thinks.',
+  'Numbers don\'t lie. Trace the full funnel from population to retained, paying user.',
+  'The most important layer. Real people. Real lives. Real reasons they open this product.',
+  'The gap between what exists and what should exist is where a PM\'s entire value lives.',
+  'Opportunities without numbers are opinions. Size each one. Show the maths.',
+  'Everything in the previous layers led here. What do you own? What do you build first?'
+];
+
+const LD_MSGS = [
+  'Mapping the business model…',
+  'Researching the competitive landscape…',
+  'Analysing product decisions…',
+  'Building the population funnel…',
+  'Understanding the real users…',
+  'Finding where value leaks…',
+  'Quantifying the opportunities…',
+  'Positioning your move…'
+];
+
+let active = [];
+let layerCache = {}; // { layerId: html_string }
+let generating = {}; // { layerId: true } — currently generating
+let sessionKey = ''; // e.g. "Netflix-deep"
+
+// ═══════════════════════════════════════════════════════
+// SCREEN MANAGEMENT
+// ═══════════════════════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function scrollTo(id) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 80);
+}
+
+function goHome() {
+  renderHome();
+  show('home');
+}
+
+function back(from) {
+  if (from === 'overview') show('entry');
+  else if (from === 'journey') {
+    if (S.layer > 0) { S.layer--; renderStoredLayer(S.layer); }
+    else show('overview');
+  }
+}
+
+function fill(n) {
+  document.getElementById('co-input').value = n;
+  document.getElementById('b1').disabled = false;
+}
+
+// ═══════════════════════════════════════════════════════
+// HOME — saved diagnoses
+// ═══════════════════════════════════════════════════════
+function getSaved() {
+  try { return JSON.parse(localStorage.getItem('rananiti_saved') || '[]'); }
+  catch(e) { return []; }
+}
+
+function saveToStorage(key, data) {
+  try {
+    const saved = getSaved().filter(s => s.key !== key);
+    saved.unshift({ key, co: data.co, mode: data.mode, why: data.why, ts: Date.now(), layers: data.layers });
+    // Keep max 10
+    localStorage.setItem('rananiti_saved', JSON.stringify(saved.slice(0, 10)));
+  } catch(e) { console.warn('Storage save failed:', e); }
+}
+
+function deleteSaved(key) {
+  try {
+    const saved = getSaved().filter(s => s.key !== key);
+    localStorage.setItem('rananiti_saved', JSON.stringify(saved));
+  } catch(e) {}
+  renderHome();
+}
+
+function timeAgo(ts) {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 2) return 'Just now';
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+
+function renderHome() {
+  const saved = getSaved();
+  const list = document.getElementById('saved-list');
+  if (!saved.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-ico">📋</div><div class="empty-txt">No diagnoses yet.<br>Start one below — it will be saved here.</div></div>`;
+    return;
+  }
+  list.innerHTML = saved.map(s => {
+    const layerCount = Object.keys(s.layers || {}).length;
+    const totalLayers = s.mode === 'quick' ? 5 : 8;
+    const complete = layerCount >= totalLayers ? '✓ Complete' : `${layerCount}/${totalLayers} layers`;
+    return `<div class="saved-card">
+      <div style="flex:1;cursor:pointer" onclick="openSaved('${s.key}')">
+        <div class="saved-co">${s.co}</div>
+        <div class="saved-meta">${s.mode === 'quick' ? 'Quick Scan' : 'Deep Dive'} · ${complete} · ${timeAgo(s.ts)}</div>
+      </div>
+      <div class="saved-actions">
+        <button class="saved-open" onclick="openSaved('${s.key}')">Open</button>
+        <button class="saved-del" onclick="event.stopPropagation();deleteSaved('${s.key}')">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openSaved(key) {
+  const saved = getSaved().find(s => s.key === key);
+  if (!saved) return;
+  S.co = saved.co;
+  S.why = saved.why;
+  S.mode = saved.mode;
+  S.layer = 0;
+  sessionKey = key;
+  layerCache = { ...(saved.layers || {}) };
+  generating = {};
+  active = S.mode === 'quick' ? ALL.filter(l => l.quick) : ALL;
+  show('journey');
+  initTabs();
+  // First layer: if cached render immediately, else generate
+  if (layerCache[active[0].id]) {
+    renderLayer(0, layerCache[active[0].id]);
+  } else {
+    loadLayer(0);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// ENTRY FLOW
+// ═══════════════════════════════════════════════════════
+document.getElementById('co-input').addEventListener('input', e => {
+  document.getElementById('b1').disabled = e.target.value.trim().length < 2;
+});
+
+document.getElementById('b1').addEventListener('click', () => {
+  S.co = document.getElementById('co-input').value.trim();
+  document.getElementById('c2').style.display = 'block';
+  scrollTo('c2');
+});
+
+document.querySelectorAll('.why-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.why-btn').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    S.why = b.dataset.w;
+    document.getElementById('b2').disabled = false;
+  });
+});
+
+document.getElementById('b2').addEventListener('click', () => {
+  document.getElementById('c3').style.display = 'block';
+  scrollTo('c3');
+});
+
+document.querySelectorAll('.mcard').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.mcard').forEach(x => x.classList.remove('sel'));
+    b.classList.add('sel');
+    S.mode = b.dataset.m;
+    document.getElementById('b3').disabled = false;
+  });
+});
+
+document.getElementById('b3').addEventListener('click', () => {
+  active = S.mode === 'quick' ? ALL.filter(l => l.quick) : ALL;
+  sessionKey = `${S.co}-${S.mode}`.toLowerCase().replace(/\s+/g, '-');
+  layerCache = {};
+  generating = {};
+
+  // Check if we have a saved version
+  const existing = getSaved().find(s => s.key === sessionKey);
+  if (existing && existing.layers) {
+    layerCache = { ...existing.layers };
+  }
+
+  show('overview');
+  document.getElementById('ov-co').textContent = S.co;
+  document.getElementById('ll').innerHTML = active.map((l, i) => `
+    <div class="ll-row">
+      <div class="ll-n">${i + 1}</div>
+      <div class="ll-b"><div class="ll-name">${l.icon} ${l.label}</div><div class="ll-d">${l.desc}</div></div>
+      <div class="ll-t">~${S.mode === 'quick' ? '3' : '5'}m</div>
+    </div>`).join('');
+});
+
+document.getElementById('b-begin').addEventListener('click', () => {
+  S.layer = 0;
+  show('journey');
+  initTabs();
+  loadLayer(0);
+});
+
+document.getElementById('back-layer').addEventListener('click', () => {
+  if (S.layer > 0) { S.layer--; renderStoredLayer(S.layer); }
+  else show('overview');
+});
+
+// ═══════════════════════════════════════════════════════
+// PROGRESS + TABS
+// ═══════════════════════════════════════════════════════
+function initTabs() {
+  document.getElementById('layer-tabs').innerHTML = active.map((l, i) =>
+    `<button class="ltab" id="tab${i}" onclick="jumpTo(${i})">${l.icon} ${l.label}</button>`
+  ).join('');
+}
+
+function updateTabs(i) {
+  document.querySelectorAll('.ltab').forEach((t, j) => {
+    t.classList.remove('active', 'done', 'loading-tab');
+    if (j < i) t.classList.add('done');
+    if (j === i) t.classList.add('active');
+    if (j > i && generating[active[j]?.id]) t.classList.add('loading-tab');
+  });
+  const t = document.getElementById(`tab${i}`);
+  if (t) t.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+}
+
+function updProg(i) {
+  document.getElementById('prog-layer').textContent = `${active[i].icon} ${active[i].label}`;
+  document.getElementById('prog-n').textContent = `${i + 1}/${active.length}`;
+  document.getElementById('prog-fill').style.width = `${((i + 1) / active.length) * 100}%`;
+  updateTabs(i);
+}
+
+function jumpTo(i) {
+  S.layer = i;
+  if (layerCache[active[i].id]) {
+    renderStoredLayer(i);
+  } else {
+    loadLayer(i);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// API — SYSTEM PROMPT + LAYER INSTRUCTIONS
+// ═══════════════════════════════════════════════════════
+const SYSTEM_PROMPT = `You are Rananiti, a world-class product strategy intelligence tool for product managers. You generate structured HTML content for company diagnosis.
+
+STRICT OUTPUT RULES:
+1. Return ONLY raw HTML. No markdown. No backticks. No preamble. No explanation. Start directly with first HTML element.
+2. Use ONLY these CSS classes: insight insight-lbl insight-txt, sl, num-row num-box accent dim num-big num-lbl num-sub, bars bars-title bar-row bar-meta bar-lbl bar-val bar-track bar-fill (add gold or dark modifier), funnel fn-step fn-bar-wrap fn-bar fn-lbl fn-num fn-drop, hl, india india-lbl, t (table), arch arch-head arch-ico arch-name arch-tag arch-grid ag ag-l ag-v, gap gap-hd gap-num gap-title gap-desc gap-moment, opp opp-title opp-num opp-formula opp-meta, qcard qn qtext qwhy, badge bc bd be bu
+3. Every stat must have [CONFIRMED] [DERIVED] [ESTIMATED] or [UNAVAILABLE] — these auto-convert to badges
+4. bar-fill needs inline style: style="width:XX%" (actual percentage, no fake 100%)
+5. fn-bar needs inline style for background color and width
+6. Max 3 sentences per paragraph. Numbers over words always.
+7. Always include india section for every layer
+8. Use real numbers, real product names, real events — no placeholders
+9. Start with insight block always`;
+
+function getLayerInstructions(layerId, co, mode, why) {
+  const d = mode === 'deep' ? 'comprehensive' : 'concise essential';
+  const wm = {
+    interview: 'preparing for a job interview',
+    outreach: 'building a case to approach this company',
+    joining: 'about to join as a PM',
+    internal: 'already working here wanting to think bigger',
+    building: 'building something in this space',
+    curious: 'exploring out of genuine curiosity'
+  };
+  const w = wm[why] || 'exploring';
+
+  const map = {
+    business: `Generate ${d} HTML for ${co}'s business model.
+Structure: insight block (one-line model) → sl "Three revenue levers" → num-row with 3 boxes (core/new/emerging revenue streams) → sl "Key financials" → num-row with 4-6 stat boxes (revenue, growth, margin, key metric) → sl "Revenue split" → bars chart → sl "What each customer pays" → bars chart → hl (key tension or imbalance) → india section with num-row + pricing table.
+Be specific: real revenue figures, real fee structures, real growth rates. Mark every stat.`,
+
+    market: `Generate ${d} HTML for ${co}'s competitive market.
+Structure: insight block (real competition insight) → sl "Market size" → num-row → sl "Who ${co} is really up against" → t table (Platform/Users/Their Weapon/${co} Edge) → sl "Where ${co} wins and loses" → 2 num-boxes side by side (wins list / loses list) → hl (key market insight) → india section with market share bars + key local threat.
+Be specific: real competitor names, real market sizes, real differentiators.`,
+
+    product: `Generate ${d} HTML for ${co}'s product.
+Structure: insight block (product's real job) → sl "What has been built" → num-row (core/bets) → sl "Key product metrics" → num-row → sl "Decisions that worked" → 3 hl boxes → sl "Decisions that failed" → t table (Decision/What Happened/What It Revealed) → india section.
+Be specific: real features, real metrics, real product failures with outcomes.`,
+
+    numbers: `Generate ${d} HTML for ${co}'s user funnel and numbers.
+Structure: insight block → sl "Global funnel" → funnel (vertical stepped bars, 5-6 steps from world population to daily active) → sl "Where users are" → bars → sl "Who is using this" → bars (demographic splits) → sl "The number that explains everything" → insight block (single most important engagement stat) → sl "Key engagement metrics" → num-row → india section with India-specific funnel.
+Make funnel bars have realistic widths. Use real demographic data.`,
+
+    human: `Generate ${d} HTML for ${co}'s real users.
+Structure: insight block (core psychological insight) → sl "Types of ${co} user" → 4-5 arch cards (each with icon, name, tag, paragraph, 4-cell arch-grid: why they use it/what they need/what frustrates/what they tell others, hl insight) → sl "Social currency map" → t table (situation/who they tell/why) → india section.
+Go deep on psychology. Use emotional language. Be specific about life situations.`,
+
+    gaps: `Generate ${d} HTML for ${co}'s gaps.
+Structure: insight block → 4-5 gap cards (each: gap-num, gap-title, gap-desc, gap-moment with human story) → after key gap add supporting num-row if relevant → summary t table (Barrier/What's Missing/Who It Blocks) → india section with India-specific gaps.
+Every gap must be grounded in a real human moment from the user archetypes.`,
+
+    opportunities: `Generate ${d} HTML for ${co}'s opportunities.
+Structure: insight block (the rule about numbers) → 4 opp cards (each: opp-title, opp-num with big revenue number, paragraph, opp-formula showing actual maths, opp-meta with time/difficulty) → sl "All four ranked" → t table (Opportunity/Revenue Potential/Difficulty/Horizon) → hl (the sequence that makes sense).
+Show real maths. Use [DERIVED] for calculations. One opportunity must be India-specific.`,
+
+    move: `Generate ${d} HTML for a PM's move at ${co} — tailored for someone who is ${w}.
+Structure: insight block (your move) → sl "The highest-leverage problem" → hl (specific problem with revenue impact) → sl "What a PM must understand first" → num-row with 3 conceptual boxes → sl "Three questions to ask in week 1" → 3 qcard cards (each: question, why it matters) → sl "How to open the first conversation" → hl (exact opening line with explanation) → sl "What 90 days looks like" → num-row (30d/60d/90d) → india section.
+Be specific to ${co}. No generic PM advice.`
+  };
+
+  return map[layerId] || `Generate ${d} HTML for ${layerId} layer of ${co}. Raw HTML only.`;
+}
+
+// ═══════════════════════════════════════════════════════
+// API CALL
+// ═══════════════════════════════════════════════════════
+async function callAPI(layerId, retryCount = 0) {
+  const allIdx = ALL.findIndex(l => l.id === layerId);
+  const msg = `Company: ${S.co}
+Purpose: ${S.why} | Mode: ${S.mode}
+Layer: ${ALL[allIdx].label}
+
+${getLayerInstructions(layerId, S.co, S.mode, S.why)}
+
+Generate now. Raw HTML only. No backticks. No preamble.`;
+
+  const res = await fetch('/.netlify/functions/proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      system: SYSTEM_PROMPT,
+      messages: [{ role: 'user', content: msg }]
+    })
+  });
+
+  if (!res.ok) {
+    const errText = await res.text().catch(() => '');
+    throw new Error(`API ${res.status}: ${errText.slice(0, 120)}`);
+  }
+
+  const data = await res.json();
+
+  if (!data?.content?.[0]?.text) {
+    throw new Error('No content in API response');
+  }
+
+  let html = data.content[0].text
+    .replace(/^```html\n?/i, '').replace(/\n?```$/i, '').trim();
+
+  // Convert badge notation
+  html = html
+    .replace(/\[CONFIRMED\]/g, '<span class="badge bc">Confirmed</span>')
+    .replace(/\[DERIVED\]/g,   '<span class="badge bd">Derived</span>')
+    .replace(/\[ESTIMATED\]/g, '<span class="badge be">Estimated</span>')
+    .replace(/\[UNAVAILABLE\]/g,'<span class="badge bu">Unavailable</span>');
+
+  return html;
+}
+
+// ═══════════════════════════════════════════════════════
+// LAYER LOADING — with background prefetch
+// ═══════════════════════════════════════════════════════
+async function loadLayer(i) {
+  const layerId = active[i].id;
+  updProg(i);
+
+  // Already cached — render immediately
+  if (layerCache[layerId]) {
+    if (document.getElementById('loading').classList.contains('active')) {
+      show('journey');
+    }
+    renderLayer(i, layerCache[layerId]);
+    prefetchNext(i);
+    return;
+  }
+
+  // First layer: full screen loading
+  if (i === 0 && !document.getElementById('journey').classList.contains('active')) {
+    document.getElementById('ld-txt').textContent = LD_MSGS[ALL.findIndex(l => l.id === layerId)] || 'Researching…';
+    show('loading');
+  } else {
+    // Subsequent layers: inline loading state
+    show('journey');
+    renderLayerLoading(i);
+  }
+
+  generating[layerId] = true;
+  updateTabs(i);
+
+  try {
+    const html = await callAPI(layerId);
+    layerCache[layerId] = html;
+    delete generating[layerId];
+
+    // Persist to localStorage
+    persistCache();
+
+    if (S.layer === i) {
+      if (document.getElementById('loading').classList.contains('active')) {
+        show('journey');
+      }
+      renderLayer(i, html);
+      prefetchNext(i);
+    }
+    updateTabs(i);
+  } catch (err) {
+    delete generating[layerId];
+    updateTabs(i);
+    if (S.layer === i) {
+      if (document.getElementById('loading').classList.contains('active')) {
+        show('journey');
+      }
+      renderLayerError(i, err.message);
+    }
+  }
+}
+
+function prefetchNext(currentIdx) {
+  // Start generating next 2 layers in background
+  for (let j = currentIdx + 1; j <= Math.min(currentIdx + 2, active.length - 1); j++) {
+    const layerId = active[j].id;
+    if (!layerCache[layerId] && !generating[layerId]) {
+      generating[layerId] = true;
+      updateTabs(j);
+      callAPI(layerId).then(html => {
+        layerCache[layerId] = html;
+        delete generating[layerId];
+        persistCache();
+        updateTabs(S.layer);
+      }).catch(err => {
+        delete generating[layerId];
+        updateTabs(S.layer);
+      });
+    }
+  }
+}
+
+function persistCache() {
+  saveToStorage(sessionKey, {
+    co: S.co, mode: S.mode, why: S.why,
+    layers: { ...layerCache }
+  });
+}
+
+function renderStoredLayer(i) {
+  updProg(i);
+  const layerId = active[i].id;
+  if (layerCache[layerId]) {
+    renderLayer(i, layerCache[layerId]);
+  } else if (generating[layerId]) {
+    renderLayerLoading(i);
+    // Poll until ready
+    const poll = setInterval(() => {
+      if (layerCache[layerId]) {
+        clearInterval(poll);
+        if (S.layer === i) renderLayer(i, layerCache[layerId]);
+      }
+    }, 1000);
+  } else {
+    loadLayer(i);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════
+function renderLayer(i, content) {
+  const l = active[i];
+  const ai = ALL.findIndex(x => x.id === l.id);
+
+  document.getElementById('layer-content').innerHTML = `
+    <div class="lh">
+      <div class="lh-eye">Layer ${i + 1} of ${active.length} — ${l.icon} ${l.label}</div>
+      <h1 class="lh-title">${TITLES[ai].replace(/{co}/g, S.co)}</h1>
+      <p class="lh-intro">${INTROS[ai]}</p>
+    </div>
+    <div class="gc">${content}</div>`;
+
+  const cp = document.getElementById('cp');
+  cp.style.display = 'block';
+  cp.querySelectorAll('.cp-btn').forEach(b => b.classList.remove('ch'));
+
+  const nb = document.getElementById('next-btn');
+  nb.classList.remove('vis');
+  nb.textContent = i < active.length - 1
+    ? `Next → ${active[i + 1].icon} ${active[i + 1].label}`
+    : '✓ Diagnosis Complete';
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(b => {
+      const w = b.style.width;
+      b.style.width = '0';
+      setTimeout(() => { b.style.width = w; }, 50);
+    });
+  }, 200);
+
+  document.querySelector('.prog').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderLayerLoading(i) {
+  const l = active[i];
+  const ai = ALL.findIndex(x => x.id === l.id);
+  const msgs = [
+    `Researching ${S.co}'s business model…`,
+    `Mapping ${S.co}'s competitive landscape…`,
+    `Analysing ${S.co}'s product decisions…`,
+    `Building the ${S.co} user funnel…`,
+    `Profiling ${S.co}'s real users…`,
+    `Finding where ${S.co} leaks value…`,
+    `Quantifying ${S.co}'s opportunities…`,
+    `Positioning your move at ${S.co}…`
+  ];
+
+  document.getElementById('layer-content').innerHTML = `
+    <div class="lh">
+      <div class="lh-eye">Layer ${i + 1} of ${active.length} — ${l.icon} ${l.label}</div>
+      <h1 class="lh-title">${TITLES[ai].replace(/{co}/g, S.co)}</h1>
+      <p class="lh-intro">${INTROS[ai]}</p>
+    </div>
+    <div class="layer-loading">
+      <div class="ll-spinner"><span></span><span></span><span></span></div>
+      <div class="ll-title">${msgs[ai] || 'Researching…'}</div>
+      <div class="ll-sub">Usually takes 15–30 seconds. The next layers are being prepared in the background.</div>
+    </div>`;
+
+  document.getElementById('cp').style.display = 'none';
+  document.getElementById('next-btn').classList.remove('vis');
+  document.querySelector('.prog').scrollIntoView({ behavior: 'smooth' });
+
+  // Poll for completion
+  const poll = setInterval(() => {
+    const layerId = active[i].id;
+    if (layerCache[layerId] && S.layer === i) {
+      clearInterval(poll);
+      renderLayer(i, layerCache[layerId]);
+    }
+  }, 1000);
+}
+
+function renderLayerError(i, errMsg) {
+  const l = active[i];
+  const ai = ALL.findIndex(x => x.id === l.id);
+
+  document.getElementById('layer-content').innerHTML = `
+    <div class="lh">
+      <div class="lh-eye">Layer ${i + 1} of ${active.length} — ${l.icon} ${l.label}</div>
+      <h1 class="lh-title">${TITLES[ai].replace(/{co}/g, S.co)}</h1>
+    </div>
+    <div class="layer-error">
+      <div class="le-ico">⚠️</div>
+      <div class="le-title">Could not load this layer</div>
+      <div class="le-sub">Check your internet connection and try again.<br><small style="color:var(--ink-f)">${errMsg}</small></div>
+      <button class="le-retry" onclick="retryLayer(${i})">Retry →</button>
+    </div>`;
+
+  document.getElementById('cp').style.display = 'none';
+  document.getElementById('next-btn').classList.remove('vis');
+}
+
+function retryLayer(i) {
+  delete layerCache[active[i].id];
+  delete generating[active[i].id];
+  loadLayer(i);
+}
+
+// ═══════════════════════════════════════════════════════
+// CHECKPOINT + NEXT
+// ═══════════════════════════════════════════════════════
+document.querySelectorAll('.cp-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.cp-btn').forEach(x => x.classList.remove('ch'));
+    b.classList.add('ch');
+    document.getElementById('next-btn').classList.add('vis');
+    setTimeout(() => document.getElementById('next-btn').scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+  });
+});
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  if (S.layer < active.length - 1) {
+    S.layer++;
+    if (layerCache[active[S.layer].id]) {
+      renderStoredLayer(S.layer);
+    } else {
+      loadLayer(S.layer);
+    }
+  } else {
+    // Diagnosis complete
+    persistCache();
+    show('home');
+    renderHome();
+  }
+});
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+renderHome();
+</script>
+</body>
+</html>
